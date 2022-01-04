@@ -1,0 +1,98 @@
+@import '~vuetify/src/styles/styles.sass'
+
+
+@font-face
+  font-family: Poppins
+  src: url(./Poppins/Poppins-Regular.ttf) format('truetype')
+
+$body-font-family: "Poppins"
+​
+$typoOptions: headline title text-subtitle-1 text-subtitle-2 body-1 body-2 text-caption overline text-h5 text-h6
+
+%font-choice
+  font-family: $body-font-family, sans-serif !important
+
+@mixin md-typography
+  @each $typoOption in $typoOptions 
+    .#{$typoOption} 
+      @extend %font-choice
+
+.v-application
+  @include md-typography
+  @extend %font-choice
+
+
+
+@font-face
+  font-family: Maiandra
+  src: url(./Maiandra/Maiandra_GD_Regular.ttf) format('truetype')
+
+$header-font-family: "Maiandra"
+
+$headerTypoOptions: text-h1 text-h2 text-h3 text-h4 display-4 display-3 display-2 display-1
+
+%header-font-choice
+  font-family: $header-font-family, sans-serif !important
+
+@mixin md-header-typography
+  @each $typoOption in $headerTypoOptions 
+    .#{$typoOption}
+      font-weight: normal
+      @extend %header-font-choice
+
+.v-application
+  @include md-header-typography
+
+
+.v-application
+  .text-truncate
+    white-space: nowrap
+    text-overflow: ellipsis
+    overflow: hidden
+
+
+    @supports (-webkit-line-clamp: 3)
+      overflow: hidden
+      text-overflow: ellipsis
+      white-space: initial !important
+      display: -webkit-box
+      -webkit-line-clamp: 3
+      -webkit-box-orient: vertical
+
+.theme--light.v-application
+  color: #423D3D !important
+
+.theme--light.v-card
+  color: #423D3D !important
+
+$border-radius-root: 0.25rem
+
+.v-application .rounded
+  border-radius: $border-radius-root !important
+  
+.v-application .rounded-0
+  border-radius: 0 !important
+
+.v-application .rounded-sm
+  border-radius: $border-radius-root/2 !important
+
+.v-application .rounded-md
+  border-radius: $border-radius-root !important
+
+.v-application .rounded-lg
+  border-radius: $border-radius-root*2 !important
+
+.v-application .rounded-xl
+  border-radius: $border-radius-root*6 !important
+
+.v-application .rounded-circle
+  border-radius: 50% !important
+
+.v-application .rounded-pill
+  border-radius: 9999px !important
+
+.v-application .fit-content
+  max-width: fit-content
+
+.v-application .d-grid
+  display: grid

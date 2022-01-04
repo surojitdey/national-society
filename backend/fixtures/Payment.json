@@ -1,0 +1,50 @@
+[
+    {
+        "model": "fees.payment",
+        "pk": 24,
+        "fields": {
+            "user": 14,
+            "amount": "250",
+            "amount_break_up": {
+                "water": "150",
+                "security": "100"
+            },
+            "payment_month": "12",
+            "payment_year": "2021",
+            "date": "2021-12-22T12:23:09.821Z",
+            "status": "unpaid"
+        }
+    },
+    {
+        "model": "fees.payment",
+        "pk": 25,
+        "fields": {
+            "user": 18,
+            "amount": "250",
+            "amount_break_up": {
+                "water": "150",
+                "security": "100"
+            },
+            "payment_month": "12",
+            "payment_year": "2021",
+            "date": "2021-12-22T12:23:09.821Z",
+            "status": "unpaid"
+        }
+    },
+    {
+        "model": "fees.payment",
+        "pk": 26,
+        "fields": {
+            "user": 13,
+            "amount": "250",
+            "amount_break_up": {
+                "water": "150",
+                "security": "100"
+            },
+            "payment_month": "12",
+            "payment_year": "2021",
+            "date": "2021-12-22T12:23:09.821Z",
+            "status": "unpaid"
+        }
+    }
+]

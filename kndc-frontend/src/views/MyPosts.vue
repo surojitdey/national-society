@@ -1,0 +1,206 @@
+<template>
+  <div class="posts-notification">
+    <v-row align="center" justify="center">
+      <v-col cols="11">
+        <v-card class="my-6 rounded-lg" elevation="0" v-for="(info, index) in currentPagePosts" :key="index">
+          <v-container>
+            <v-row class="mx-0" align="center">
+              <v-chip outlined label :color="info.post_status=='rejected'? 'red': info.post_status=='new'?'warning':'green'" class="mr-2 my-2 rounded text-uppercase subtitle-1">{{info.post_status=='new'?'pending':info.post_status}}</v-chip>
+              <v-btn class="mx-0" color="primary" text dense fab small @click="editPost(info)">
+                <v-icon>mdi-pencil-outline</v-icon>
+              </v-btn>
+              <v-btn class="mx-0" color="red" text dense fab small @click="deletePost(info)">
+                <v-icon>mdi-delete-outline</v-icon>
+              </v-btn>
+            </v-row>
+            <v-row>
+              <v-col cols="3" v-if="info.thumbnail || info.media_file">
+                <v-card max-width="236" elevation="4" class="rounded-lg">
+                  <v-img class="align-end" height="211" v-if="info.thumbnail" :src="info.thumbnail"></v-img>
+                  <v-img class="align-end" height="211" v-else :src="info.media_file"></v-img>
+                </v-card>
+              </v-col>
+              <v-col v-if="info.title || info.description">
+                <v-card height="211" elevation="4" class="rounded-lg text-card">
+                  <v-row class="ma-0 pa-4">
+                    <v-card-title v-text="info.title" class="text-h5 pa-0 text-capitalize font-weight-bold text-justify"></v-card-title>
+                    <v-card-text v-text="info.description" v-if="info.description.length<200 || showMore" class="text-subtitle-1 px-0 py-2 text-justify"></v-card-text>
+                    <v-card-text v-text="info.description.slice(0, 200)" v-else class="text-subtitle-1 px-0 py-2 text-justify"></v-card-text>
+                    <a v-if="info.description.length>200" @click="moreLess">{{linkText}}</a>
+                  </v-row>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card>
+        <v-row justify="center" align="center">
+          <v-pagination
+            v-model="page"
+            :length="postPerPage!=null ? Math.ceil(posts.length/postPerPage) : 1"
+            :total-visible="7"
+            color="project_primary"
+          ></v-pagination>
+          <v-col cols="1">
+            <v-select
+              v-model="postPerPage"
+              :items="postItemsPerPage"
+              item-text="text"
+              item-value="value"
+            ></v-select>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
+    <v-dialog v-model="showEdit" width="70%" persistent>
+      <EditPost 
+        :post_id="editedPostId"
+        :title="editedTitle"
+        :description="editedDescription"
+        :imageUrl="editedImage"
+        @cancel-edit="showEdit=false"
+        @title-changed="editedTitle=$event"
+        @description-changed="editedDescription=$event"
+        @imageUrl-changed="editedImage=$event"></EditPost>
+    </v-dialog>
+    <v-dialog v-model="deleteDialog" width="600" persistent>
+      <v-card>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
+              <v-card-title>Do you really want to delete this post?</v-card-title>
+            </v-col>
+            <v-col cols="12">
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn class="green--text" @click="confirmDelete">Yes</v-btn>
+                <v-btn class="red--text" @click="cancelDelete">No</v-btn>
+              </v-card-actions>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-card>
+    </v-dialog>
+  </div>  
+</template>
+<script>
+import EditPost from '@/components/EditPost.vue'
+import { mapActions, mapGetters, mapMutations } from 'vuex'
+export default {
+  title: () => ('My Posts'),
+  metaInfo: {
+    title: 'Resident Posts'
+  },
+  components: {
+    EditPost
+  },
+  data: () => ({
+    showMore: false,
+    linkText: 'more',
+    disabledButtons: false,
+    showEdit: false,
+    editedPostId: new Number(),
+    editedTitle: '',
+    editedDescription: '',
+    editedImage: undefined,
+    deleteDialog: false,
+    deletedPostId: new Number(),
+    overlay: false,
+    page: 1,
+    postPerPage: 5,
+    postItemsPerPage: [
+      {
+        text: '5',
+        value: 5
+      },
+      {
+        text: '10',
+        value: 10
+      },
+      {
+        text: '15',
+        value: 15
+      },
+      {
+        text: '20',
+        value: 20
+      },
+      {
+        text: '100',
+        value: 100
+      },
+      {
+        text: 'All',
+        value: null
+      },
+    ]
+  }),
+  computed: {
+    ...mapGetters('user',{
+      posts: 'getPosts'
+    }),
+    currentPagePosts() {
+      return this.postPerPage!=null ? this.posts.slice((this.page-1)*this.postPerPage,(this.page-1)*this.postPerPage+this.postPerPage) : this.posts
+    }
+  },
+  methods: {
+    ...mapActions('user', [
+      'fetchUserPosts',
+      'updatePostStatus',
+      'deleteStory'
+    ]),
+    ...mapMutations('user', [
+      'setPostStatusProperty'
+    ]),
+    moreLess() {
+      this.showMore = !this.showMore
+      if(this.showMore) {
+        this.linkText = 'less'
+      } else {
+        this.linkText = 'more'
+      }
+    },
+    updatePostStatusProperty(status, id) {
+      this.setPostStatusProperty({
+        status,
+        id
+      })
+      this.updatePostStatus().then(() => {
+        this.fetchUserPosts()
+      })
+    },
+    editPost(post) {
+      this.editedPostId = post.id
+      this.editedTitle = post.title
+      this.editedDescription = post.description
+      this.editedImage = post.media_file
+      this.showEdit = true
+    },
+    deletePost(post) {
+      this.deletedPostId = post.id
+      this.deleteDialog = true
+    },
+    cancelDelete() {
+      this.deletedPostId = new Number()
+      this.deleteDialog = false
+    },
+    confirmDelete() {
+      this.deleteStory(this.deletedPostId).then(() => {
+        this.fetchUserPosts()
+        this.deleteDialog = false
+      })
+    }
+  },
+  mounted() {
+    this.overlay = true
+    this.fetchUserPosts().then(() => {
+      this.overlay = false
+    })
+  }
+}
+</script>
+<style scoped>
+.text-card {
+  overflow-y: scroll;
+  padding: 0;
+}
+</style>
