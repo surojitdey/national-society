@@ -25,9 +25,12 @@ class FeesItemViewset(viewsets.ModelViewSet):
     if self.request.method == 'GET':
       self.permission_classes = [IsAdminUser | IsUser]
     return super(FeesItemViewset, self).get_permissions()
+  
+  def get_queryset(self):
+    return FeesItem.objects.filter(society=self.request.user.society)
 
   def perform_create(self, serializer):
-    serializer.save()
+    serializer.save(society=self.request.user.society)
 
 
 class UpdateFeesItemViewset(viewsets.ModelViewSet):
@@ -37,24 +40,18 @@ class UpdateFeesItemViewset(viewsets.ModelViewSet):
 
   def create(self, request):
     try:
-      fees_items = FeesItem.objects.get(id=self.request.data.get('id'))
-      if fees_items:
-        fees_items.fields = self.request.data.get('fields')
-        fees_items.save()
-        return Response({
-          'status': True,
-          'details': 'Fees items are updated' 
-        }, status=status.HTTP_200_OK)
-      else:
-        return Response({
-          'status': False,
-          'details': 'Fees items are not found.'
-        }, status=status.HTTP_404_NOT_FOUND)
+      fees_items = FeesItem.objects.get(id=self.request.data.get('id'), society=self.request.user.society)
+      fees_items.fields = self.request.data.get('fields')
+      fees_items.save()
+      return Response({
+        'status': True,
+        'details': 'Fees items are updated' 
+      }, status=status.HTTP_200_OK)
     except ObjectDoesNotExist:
       return Response({
         'status': False,
         'details': 'Fees items are not found'
-      }, status=status.HTTP_417_EXPECTATION_FAILED)
+      }, status=status.HTTP_404_NOT_FOUND)
 
 
 class PaymentViewset(viewsets.ModelViewSet):
@@ -71,7 +68,7 @@ class PaymentViewset(viewsets.ModelViewSet):
     serializer = self.serializer_class(data=request.data)
     if(serializer.is_valid()):
       try:
-        payment = Payment.objects.get(id=self.request.data.get('id'))
+        payment = Payment.objects.get(id=self.request.data.get('id'), user__society=self.request.user.society)
         if payment:
           payment.status = self.request.data.get('status')
           payment.save()
@@ -88,9 +85,9 @@ class PaymentViewset(viewsets.ModelViewSet):
         return Response({
           'status': False,
           'details': 'Payment does not exist'
-        }, status=status.HTTP_417_EXPECTATION_FAILED)
+        }, status=status.HTTP_404_NOT_FOUND)
     else:
-      return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetPaymentStatusViewset(viewsets.ModelViewSet):
@@ -225,7 +222,8 @@ class PendingPaymentViewset(viewsets.ModelViewSet):
 
   def list(self, request):
     from_month, to_month, from_year, to_year = adjust_date_and_months()
-    active_users = User.objects.exclude(role=User.Role.ADMIN).filter(is_active=True)
+    active_users = User.objects.exclude(role=User.Role.SUPER).exclude(
+        role=User.Role.ADMIN).filter(is_active=True)
     user_data = []
     limited_user_data = []
     for user in active_users:

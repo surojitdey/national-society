@@ -25,6 +25,14 @@ class ReadOnlyMixin(AuthenticatedWithRole):
         return super().has_permission(request, view)
 
 
+class IsSuperUser(AuthenticatedWithRole):
+    """
+    Allows access only to super users.
+    """
+
+    role = User.Role.SUPER
+
+
 class IsAdminUser(AuthenticatedWithRole):
     """
     Allows access only to admin users.

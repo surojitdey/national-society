@@ -1,26 +1,19 @@
-import json
-from json import JSONEncoder
-import asyncio
 
-from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework import viewsets, status, permissions
-from rest_framework.authentication import TokenAuthentication, SessionAuthentication, BasicAuthentication
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from rest_framework.parsers import JSONParser
-from rest_framework.request import Request
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 
 from users.models import User, FamilyDetails, OTP
 from users.serializers import UserSerializer, FamilySerializer, userStatusSerializer, getUserSerializer, getUserByMobileNumberSerializer, forgotPasswordSerializer, UpdatePasswordSerializer, GetUserSerializer
 from service_auth.permissions import IsUser, IsUserReadOnly, IsAdminUser
 from helpers.otp import generate_otp, verify_otp, send_sms, create_otp, get_message_template, approved_account_message
+from society.models import Society
 
 
 class UserStatusUpdateViewset(viewsets.ViewSet):
@@ -71,7 +64,7 @@ class GetAllUserViewset(viewsets.ModelViewSet):
   permission_classes = [IsUser | IsAdminUser]
 
   def get_queryset(self):
-    return User.objects.exclude(role=User.Role.ADMIN)
+    return User.objects.exclude(role=User.Role.ADMIN).exclude(role=User.Role.SUPER).filter(society=self.request.user.society)
 
 
 class GetApprovedUserViewset(viewsets.ModelViewSet):
@@ -80,7 +73,7 @@ class GetApprovedUserViewset(viewsets.ModelViewSet):
   permission_classes = [AllowAny]
 
   def get_queryset(self):
-    return User.objects.exclude(role=User.Role.ADMIN).filter(is_active=True)
+    return User.objects.exclude(role=User.Role.ADMIN).exclude(role=User.Role.SUPER).filter(is_active=True, society=self.request.user.society)
 
 
 class UserViewset(viewsets.ModelViewSet):
@@ -104,11 +97,30 @@ class UserViewset(viewsets.ModelViewSet):
     return User.objects.all()
   
   def create(self, request):
+    if 'society_registration_number' in request.data:
+      user_data = dict()
+      user_data = request.data
+      society = Society.objects.filter(
+          registration_number=request.data.get('society_registration_number'))
+      if len(society) > 0:
+        user_data['society'] = society[0].id
+        del user_data['society_registration_number']
+      else:
+        return Response({
+          'status': False,
+          'details': 'Society registration is valid.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    else:
+      return Response({
+          'status': False,
+          'details': 'Society registration not provided.'
+      }, status=status.HTTP_400_BAD_REQUEST)
+
     if 'mobile_number' in request.data:
       user = User.objects.filter(mobile_number=request.data['mobile_number'])
       if user:
         return Response({'error': 'Mobile number exits.'}, status=status.HTTP_409_CONFLICT)
-    serializer = self.serializer_class(data=request.data)
+    serializer = self.serializer_class(data=user_data)
     if serializer.is_valid():
       if 'password' not in serializer.validated_data:
         return Response({'error': 'Password required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -134,7 +146,8 @@ class UserViewset(viewsets.ModelViewSet):
               'status': True,
               'detail': 'OTP created'
           }, status=status.HTTP_200_OK)
-    return Response({ 'error': 'Some field is missing' }, status=status.HTTP_400_BAD_REQUEST)
+    else:
+      return Response({ 'error': 'Some field is missing' }, status=status.HTTP_400_BAD_REQUEST)
   
   def perform_create(self, serializer):
     if 'password' in self.request.data:
@@ -239,7 +252,6 @@ class UpdatePasswordViewset(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
     else:
       return Response("User not found", status=status.HTTP_404_NOT_FOUND)
-
 
 
 class AdminUserViewset(viewsets.ModelViewSet):

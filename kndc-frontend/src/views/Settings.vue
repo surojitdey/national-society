@@ -210,6 +210,9 @@ export default {
       fees: 'getFees',
       feesId: 'getFeesId'
     }),
+    ...mapGetters('user', {
+      user: 'getUser'
+    }),
     showAddress: {
       get() {
         return this.settings.show_address
@@ -299,6 +302,9 @@ export default {
       'createFees',
       'updateFees'
     ]),
+    ...mapActions('user', [
+      'fetchUser'
+    ]),
     ...mapMutations('settings', [
       'setSettingsProperty'
     ]),
@@ -310,6 +316,7 @@ export default {
       // this.$v.changePassword[property].$touch()
     },
     saveContacts() {
+      this.updateContactsProperty('society', this.user.society)
       this.$v.$touch()
       if(!this.$v.$invalid) {
         if(!this.settings.id) {
@@ -353,6 +360,7 @@ export default {
       this.overlay = false
     })
     this.fetchFeeData()
+    this.fetchUser()
   }
 }
 </script>

@@ -83,7 +83,7 @@
 <script>
 import { required, requiredIf, maxLength, minValue } from 'vuelidate/lib/validators'
 import DatePicker from '@/components/DatePicker.vue'
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 export default {
   title: 'Add Events',
   metaInfo: {
@@ -176,6 +176,9 @@ export default {
     overlay: false,
   }),
   computed: {
+    ...mapGetters('user', {
+      user: 'getUser'
+    }),
     dateObject() {
       return this.eventData.event_date ? new Date(this.eventData.event_date) : null
     }
@@ -216,6 +219,9 @@ export default {
     ...mapActions('event', [
       'postEvents'
     ]),
+    ...mapActions('user', [
+      'fetchUser'
+    ]),
     selectImage() {
       document.getElementById("select-image").click()
     },
@@ -233,6 +239,7 @@ export default {
         if(this.eventData.media_file && this.eventData.media_file.size && this.eventData.media_file.size>0) {
           formData.append('media_file', this.eventData.media_file)
         }
+        formData.append('society', this.user.society)
         formData.append('title', this.eventData.title)
         formData.append('description', this.eventData.description)
         formData.append('event_date', this.eventData.event_date)
@@ -258,6 +265,11 @@ export default {
       this.postComplete = false
       this.$router.push('/')
     },
+  },
+  mounted() {
+    this.fetchUser().then(() => {
+      console.log('user', this.user)
+    })
   }
 }
 </script>

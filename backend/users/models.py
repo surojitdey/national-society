@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from .managers import CustomUserManager
+from society.models import Society
 
 
 def my_default_json():
@@ -12,6 +13,7 @@ def my_default_json():
 
 class User(AbstractUser):
   class Role(models.TextChoices):
+    SUPER = 'super', _('super')
     ADMIN = 'admin', _('admin')
     USER = 'user', _('user')
 
@@ -19,6 +21,7 @@ class User(AbstractUser):
   first_name = None
   last_name = None
   ROLE = None
+  society = models.ForeignKey(Society, on_delete=models.CASCADE, null=True)
   mobile_number = models.CharField(_('mobile number'), max_length=20, unique=True)
   full_name = models.CharField(_('full name'), max_length=100, blank=False)
   address = models.TextField(_('address'), max_length=500, blank=False)
@@ -26,6 +29,8 @@ class User(AbstractUser):
   designation = models.CharField(_('designation'), max_length=50, blank=True)
   family_members = models.IntegerField(_('numbers of family members'), validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
   role = models.CharField(_('user role'), max_length=15, choices=Role.choices, default=Role.USER, blank=True)
+  is_admin = models.BooleanField(
+      _('is admin'), default=False, blank=True)
 
   USERNAME_FIELD = 'mobile_number'
   REQUIRED_FIELDS = []

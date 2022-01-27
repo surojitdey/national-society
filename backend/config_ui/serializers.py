@@ -8,6 +8,7 @@ class SettingSerializer(serializers.ModelSerializer):
     model = SettingDetails
     fields = (
         'id',
+        'society',
         'community_name',
         'appartment_name',
         'address_one',

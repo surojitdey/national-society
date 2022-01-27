@@ -2,19 +2,32 @@
   <v-container fluid class="signup">
     <v-card color="grey lighten-2" class="py-16 my-16" width="60%">
       <v-form v-model="formValid" id="signup-form" @submit.prevent="signup">
-        <v-row justify="center">
+        <v-row justify="center" no-gutters>
           <v-col cols="7" class="px-10 pb-0">
             <span class="text-h5 font-weight-bold text-uppercase justify-center">Registration Details</span>
           </v-col>
           <v-col cols="7" class="px-10 pt-0">
             <span class="text-body-2">All fields marked with * are mandatory</span>
           </v-col>
-          <v-col cols="12">
+          <v-col cols="12" class="py-4">
             <v-divider></v-divider>
           </v-col>
           <v-col cols="7" class="px-10">
             <v-text-field
               autofocus
+              outlined
+              dense
+              class="rounded"
+              v-model.trim="$v.primaryData.society_registration_number.$model"
+              label="Society Registration Id *"
+              :success="$v.primaryData.society_registration_number.isValidRegistration && $v.primaryData.society_registration_number.required"
+            ></v-text-field>
+            <span v-if="!$v.primaryData.society_registration_number.required && $v.primaryData.society_registration_number.$dirty" class="validation-text red--text text-body-2">Registration Id will be required.</span>
+            <!-- <span v-if="!$v.primaryData.mobile_number.phoneNumber" class="validation-text red--text text-body-2">Mobile Number Must be valid.</span> -->
+            <span v-if="!$v.primaryData.society_registration_number.isValidRegistration" class="validation-text red--text text-body-2">Please enter a valid registration id.</span>
+          </v-col>
+          <v-col cols="7" class="px-10">
+            <v-text-field
               outlined
               dense
               class="rounded"
@@ -60,7 +73,7 @@
           <v-col cols="7" class="px-10 pt-0">
             <span class="text-body-2">All fields marked with * are mandatory</span>
           </v-col>
-          <v-col cols="12">
+          <v-col cols="12" class="py-4">
             <v-divider></v-divider>
           </v-col>
           <v-col cols="7" class="px-10">
@@ -186,6 +199,7 @@ export default {
   },
   data: () => ({
     primaryData: {
+      society_registration_number: '',
       mobile_number: '',
       password: '',
       confirmPassword: '',
@@ -250,6 +264,18 @@ export default {
   validations() {
     let data = {
       primaryData: {
+        society_registration_number: {
+          required,
+          async isValidRegistration(value) {
+            if(value === '') return true
+            const response = await this.checkRegistrationValidity({registration: {society_registration_number: value}})
+            if(response.data.status) {
+              return !!response.data.isValid
+            } else {
+              return true
+            }
+          }
+        },
         mobile_number: {
           required,
           phoneNumber,
@@ -320,6 +346,9 @@ export default {
       'signupUser',
       'createFamilyMembers',
       'checkUserExist'
+    ]),
+    ...mapActions('society', [
+      'checkRegistrationValidity'
     ]),
     signup () {
       this.$v.$touch()

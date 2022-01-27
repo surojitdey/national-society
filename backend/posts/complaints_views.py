@@ -30,7 +30,7 @@ class AllComplaintsAndGrievancesViewset(viewsets.ModelViewSet):
   permission_classes = [IsAdminUser]
 
   def get_queryset(self):
-    return ComplaintsAndGrievances.objects.order_by('-added')
+    return ComplaintsAndGrievances.objects.filter(user__society=self.request.user.society).order_by('-added')
 
 
 class UserComplaintsAndGrievancesViewset(viewsets.ModelViewSet):
@@ -67,7 +67,7 @@ class ComplaintsAndGrievancesViewset(viewsets.ModelViewSet):
     return super(ComplaintsAndGrievancesViewset, self).get_permissions()
 
   def get_queryset(self):
-    return ComplaintsAndGrievances.objects.filter(status=ComplaintsAndGrievances.ComplaintsAndGrievancesStatus.APPROVED).order_by('-added')
+    return ComplaintsAndGrievances.objects.filter(status=ComplaintsAndGrievances.ComplaintsAndGrievancesStatus.APPROVED, user__society=self.request.user.society).order_by('-added')
 
   def perform_create(self, serializer):
     complaint = serializer.save(user=self.request.user,

@@ -53,6 +53,7 @@ const actions = {
   },
   fetchFees({commit}) {
     return ApiService.get('/fees-api/v-1/fees/').then((response) => {
+      console.log('***', response.data)
       if (response.data.length > 0) {
         commit('setFees', response.data[0].fields)
         commit('setFeesId', response.data[0].id)

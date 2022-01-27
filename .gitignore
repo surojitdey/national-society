@@ -29,3 +29,4 @@ kndc-frontend/.env
 kndc-frontend/.gitignore
 kndc-frontend/.git
 kndc-frontend/kndc_frontend_service.sh
+example/

@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'security',
     'fees.apps.FeesConfig',
     'comment.apps.CommentConfig',
+    'society',
     # Django
     'django.contrib.admin',
     'django.contrib.auth',

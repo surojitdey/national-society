@@ -24,7 +24,9 @@ class SecurityCreateViewset(viewsets.ViewSet):
     return super().get_permissions()
   
   def create(self, request):
-    serializer = self.serializer_class(data=request.data)
+    security_data = request.data
+    security_data['society'] = self.request.user.society
+    serializer = self.serializer_class(data=security_data)
     if serializer.is_valid():
       security = Security.objects.create(**serializer.validated_data)
       return Response({
@@ -77,7 +79,7 @@ class GetAllSecurities(viewsets.ModelViewSet):
   permission_classes = [IsAdminUser]
 
   def get_queryset(self):
-    return Security.objects.all()
+    return Security.objects.filter(society=self.request.user.society)
 
 
 class GetActiveSecurities(viewsets.ModelViewSet):
@@ -86,7 +88,7 @@ class GetActiveSecurities(viewsets.ModelViewSet):
   permission_classes = [IsAdminUser]
 
   def get_queryset(self):
-    return Security.objects.filter(status=Security.Status.ACTIVE)
+    return Security.objects.filter(status=Security.Status.ACTIVE, society=self.request.user.society)
 
 
 class GetSecurity(viewsets.ModelViewSet):
@@ -95,9 +97,9 @@ class GetSecurity(viewsets.ModelViewSet):
   permission_classes = [IsAdminUser]
 
   def create(self, request):
-    security = Security.objects.get(
-        id=int(self.request.data.get('id')))
-    if security:
+    try:
+      security = Security.objects.get(
+          id=int(self.request.data.get('id')), society=self.request.user.society)
       return Response({
         'security_id': security.id,
         'full_name': security.full_name,
@@ -109,8 +111,11 @@ class GetSecurity(viewsets.ModelViewSet):
         'mobile_number': security.mobile_number,
         'reference': security.reference
       }, status=status.HTTP_200_OK)
-    else:
-      return Response("Security person not found", status=status.HTTP_404_NOT_FOUND)
+    except:
+      return Response({
+        'status': False,
+        'details':"Security person not found"
+      }, status=status.HTTP_404_NOT_FOUND)
 
 
 class UpdateStatus(viewsets.ViewSet):
@@ -121,13 +126,20 @@ class UpdateStatus(viewsets.ViewSet):
   def create(self, request):
     serializer = self.serializer_class(data=request.data)
     if serializer.is_valid():
-      security = Security.objects.get(id=serializer.validated_data.get('security_id'))
-      security.status = Security.Status.DEACTIVE if serializer.validated_data.get('status') == Security.Status.ACTIVE else Security.Status.ACTIVE
-      security.save()
-      return Response({
-        'status': True,
-        'detail': 'Status updated'
-      }, status=status.HTTP_200_OK)
+      try:
+        security = Security.objects.get(id=serializer.validated_data.get(
+            'security_id'), society=self.request.user.society)
+        security.status = Security.Status.DEACTIVE if serializer.validated_data.get('status') == Security.Status.ACTIVE else Security.Status.ACTIVE
+        security.save()
+        return Response({
+          'status': True,
+          'detail': 'Status updated'
+        }, status=status.HTTP_200_OK)
+      except:
+        return Response({
+          'status': False,
+          'details': 'Security is not found.'
+        }, status=status.HTTP_404_NOT_FOUND)
     else:
       return Response({
         'status': False,
@@ -222,7 +234,7 @@ class GetTimeViewset(viewsets.ModelViewSet):
   permission_classes = [IsAdminUser | IsUser]
 
   def get_queryset(self):
-    return Timetable.objects.filter(security__status=Security.Status.ACTIVE)
+    return Timetable.objects.filter(security__status=Security.Status.ACTIVE, security__society=self.request.user.society)
 
 class GetSecurityTimeViewset(viewsets.ModelViewSet):
   queryset = Timetable.objects.all()
@@ -230,4 +242,4 @@ class GetSecurityTimeViewset(viewsets.ModelViewSet):
   permission_classes = [IsAdminUser | IsUser]
 
   def get_queryset(self):
-    return Timetable.objects.filter(security__status=Security.Status.ACTIVE, security__id=self.request.query_params.get('security_id'))
+    return Timetable.objects.filter(security__status=Security.Status.ACTIVE, security__id=self.request.query_params.get('security_id'), security__society=self.request.user.society)

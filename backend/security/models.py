@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from society.models import Society
+
 
 def security_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/security_documents/<id>/<filename>
@@ -18,6 +20,7 @@ class Security(models.Model):
     ACTIVE = 'active', _('active')
     DEACTIVE = 'deactive', _('deactive')
   
+  society = models.ForeignKey(Society, on_delete=models.CASCADE, null=True)
   full_name = models.CharField(_('full name'), max_length=100, blank=False)
   father_name = models.CharField(_('father name'), max_length=100, blank=False)
   gender = models.CharField(_('gender'), choices=Gender.choices,

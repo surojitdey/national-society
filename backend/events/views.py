@@ -27,7 +27,7 @@ from helpers.otp import send_sms
 class EventsViewset(viewsets.ModelViewSet):
   queryset = Events.objects.all()
   serializer_class = EventSerializer
-  permission_classes = [AllowAny]
+  permission_classes = [IsUser | IsAdminUser]
   parser_classes = (MultiPartParser, FormParser,)
 
   def get_permissions(self):
@@ -40,12 +40,12 @@ class EventsViewset(viewsets.ModelViewSet):
     return super(EventsViewset, self).get_permissions()
 
   def get_queryset(self):
-    return Events.objects.order_by('-added')
+    return Events.objects.order_by('-added').filter(society=self.request.user.society)
 
   def perform_create(self, serializer):
     if self.request.data.get('send_message') == 'true':
       active_users = User.objects.exclude(
-          role=User.Role.ADMIN).filter(is_active=True).values_list('mobile_number', flat=True)
+          role=User.Role.ADMIN).exclude(role=User.Role.SUPER).filter(is_active=True, society=self.request.user.society).values_list('mobile_number', flat=True)
       serializer.save()
       send_sms(list(active_users), settings.EVENT_CREATED_MESSAGE_TEMPLATE)
       # send_sms(list(active_users), settings.EVENT_DETAILS_MESSAGE_TEMPLATE.format(
@@ -101,16 +101,16 @@ class DeleteEventViewset(viewsets.ViewSet):
 class LimitEventsViewset(viewsets.ReadOnlyModelViewSet):
   queryset = Events.objects.all()
   serializer_class = EventSerializer
-  permission_classes = [AllowAny]
+  permission_classes = [IsUser | IsAdminUser]
 
   def get_queryset(self):
-    return Events.objects.order_by('-added')[:3]
+    return Events.objects.filter(society=self.request.user.society).order_by('-added')[:3]
 
 
 class NewsViewset(viewsets.ModelViewSet):
   queryset = News.objects.all()
   serializer_class = NewsSerializer
-  permission_classes = [AllowAny]
+  permission_classes = [IsUser | IsAdminUser]
   parser_classes = (MultiPartParser, FormParser,)
 
   def get_permissions(self):
@@ -123,7 +123,7 @@ class NewsViewset(viewsets.ModelViewSet):
     return super(NewsViewset, self).get_permissions()
 
   def get_queryset(self):
-    return News.objects.order_by('-added')
+    return News.objects.order_by('-added').filter(society=self.request.user.society)
 
   def perform_create(self, serializer):
     serializer.save()
@@ -170,7 +170,7 @@ class DeleteNewsViewset(viewsets.ViewSet):
 class LimitNewsViewset(viewsets.ReadOnlyModelViewSet):
   queryset = News.objects.all()
   serializer_class = NewsSerializer
-  permission_classes = [AllowAny]
+  permission_classes = [IsUser | IsAdminUser]
 
   def get_queryset(self):
-    return News.objects.order_by('-added')[:4]
+    return News.objects.filter(society=self.request.user.society).order_by('-added')[:4]

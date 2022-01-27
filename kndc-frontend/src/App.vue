@@ -39,6 +39,7 @@ export default {
   margin: 0 !important;
 }
 .content-class {
+  overflow: hidden;
   min-height: 70vh !important;
 }
 </style>

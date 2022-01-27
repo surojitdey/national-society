@@ -18,7 +18,8 @@ urlpatterns = [
     path('api/token/refresh/', refresh_jwt_token, name='token_refresh'),
     path('security-api/v-1/', include('security.security_urls'), name='security-api'),
     path('fees-api/v-1/', include('fees.fees_urls'), name='fees-api'),
-    path('comment-api/v-1/', include('comment.comment_urls'), name='comment-api')
+    path('comment-api/v-1/', include('comment.comment_urls'), name='comment-api'),
+    path('society-api/v-1/', include('society.society_urls'), name='society-api')
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

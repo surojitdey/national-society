@@ -3,6 +3,8 @@ from datetime import datetime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from society.models import Society
+
 
 def events_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/events/<filename>
@@ -10,7 +12,7 @@ def events_directory_path(instance, filename):
 
 def events_thumbnail_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/events/thumbnail/<filename>
-    return '{0}/{1}'.format('events/thumbnail/', filename)
+    return '{0}/{1}/{2}'.format('events', 'thumbnail', filename)
 
 def news_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/news/<filename>
@@ -18,7 +20,7 @@ def news_directory_path(instance, filename):
 
 def news_thumbnail_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/news/thumbnail/<filename>
-    return '{0}/{1}'.format('news/thumbnail/', filename)
+    return '{0}/{1}/{2}'.format('news', 'thumbnail', filename)
 
 
 class Events(models.Model):
@@ -26,6 +28,7 @@ class Events(models.Model):
     AM = 'am', _('am')
     PM = 'pm', _('pm')
 
+  society = models.ForeignKey(Society, on_delete=models.CASCADE, null=True)
   title = models.CharField(_('title'), max_length=100, blank=False)
   description = models.TextField(_("description"), max_length=20000, blank=False)
   added = models.DateTimeField(auto_now_add=True)
@@ -39,6 +42,7 @@ class Events(models.Model):
 
 
 class News(models.Model):
+  society = models.ForeignKey(Society, on_delete=models.CASCADE, null=True)
   title = models.CharField(_('title'), max_length=100, blank=False)
   description = models.TextField(_("description"), max_length=20000, blank=False)
   added = models.DateTimeField(auto_now_add=True)

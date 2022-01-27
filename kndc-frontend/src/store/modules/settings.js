@@ -5,6 +5,7 @@ import ApiService from '../../services/api.service'
 
 const state = {
   setting: {
+    society: '',
     community_name: '',
     appartment_name: '',
     address_one: '',

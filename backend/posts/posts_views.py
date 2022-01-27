@@ -21,7 +21,7 @@ class AllPostViewset(viewsets.ModelViewSet):
   parser_classes = (MultiPartParser, FormParser,)
 
   def get_queryset(self):
-    return Post.objects.order_by('-added')
+    return Post.objects.filter(user__society=self.request.user.society).order_by('-added')
 
 
 class UserPostViewset(viewsets.ModelViewSet):
@@ -37,7 +37,7 @@ class UserPostViewset(viewsets.ModelViewSet):
 class PostViewset(viewsets.ModelViewSet):
   queryset = Post.objects.all()
   serializer_class = PostSerializer
-  permission_classes = [AllowAny]
+  permission_classes = [IsUser | IsAdminUser]
   parser_classes = (MultiPartParser, FormParser,)
 
   def get_permissions(self):
@@ -50,7 +50,7 @@ class PostViewset(viewsets.ModelViewSet):
     return super(PostViewset, self).get_permissions()
 
   def get_queryset(self):
-    return Post.objects.filter(post_status=Post.PostStatus.APPROVED).order_by('-added')
+    return Post.objects.filter(post_status=Post.PostStatus.APPROVED, user__society=self.request.user.society).order_by('-added')
 
   def perform_create(self, serializer):
     serializer.save(user=self.request.user,
@@ -64,7 +64,7 @@ class GetPostsById(viewsets.ModelViewSet):
   parser_classes = (MultiPartParser, FormParser,)
 
   def get_queryset(self):
-    return Post.objects.filter(user=self.request.user.id)
+    return Post.objects.filter(user=self.request.user.id, user__society=self.request.user.society)
 
 
 class ApprovePostViewset(viewsets.ViewSet):

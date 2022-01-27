@@ -8,6 +8,7 @@ import security from './modules/security'
 import settings from './modules/settings'
 import fees from './modules/fees'
 import posts from './modules/posts'
+import society from './modules/society'
 
 Vue.use(Vuex)
 
@@ -19,7 +20,8 @@ const store = new Vuex.Store({
     security,
     settings,
     fees,
-    posts
+    posts,
+    society
   },
   strict: process.env.NODE_ENV !== 'production'
 })

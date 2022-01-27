@@ -116,6 +116,9 @@ export default {
       // fees: 'getFees',
       // feesId: 'getFeesId'
     }),
+    ...mapGetters('user', {
+      user: 'getUser'
+    }),
     totalFees() {
       let total = 0
       for(let value in this.fees) {
@@ -129,6 +132,9 @@ export default {
       // 'fetchFees',
       // 'createFees',
       // 'updateFees'
+    ]),
+    ...mapActions('user', [
+      'fetchUser'
     ]),
     ...mapMutations('fees', [
       'setFeesProperty',
@@ -178,6 +184,7 @@ export default {
   mounted() {
     // this.overlays = true
     // this.fetchData()
+    this.fetchUser()
   }
 }
 </script>

@@ -151,11 +151,12 @@ def get_modified_payment_details(user, new_serializer_data, from_month=None, fro
 # automatically on first day of every month
 def update_payment_scheduler():
   active_users = User.objects.exclude(
-      role=User.Role.ADMIN).filter(is_active=True)
-  fees = FeesItem.objects.first()
+      role=User.Role.ADMIN).exclude(role=User.Role.SUPER).filter(is_active=True)
   fees_amount = 0
-  for key in fees.fields:
-    fees_amount += int(fees.fields[key])
+  if active_users[0]:
+    fees = FeesItem.objects.get(society=active_users[0].society)
+    for key in fees.fields:
+      fees_amount += int(fees.fields[key])
   
   for user in active_users:
     if not Payment.objects.filter(user=user.id, payment_month=str(datetime.now().month), payment_year=str(datetime.now().year)):

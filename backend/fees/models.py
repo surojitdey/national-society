@@ -1,8 +1,11 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from users.models import User
+from society.models import Society
 
 class FeesItem(models.Model):
+  society = models.OneToOneField(
+      Society, on_delete=models.CASCADE, null=True)
   fields = models.JSONField()
 
 class Payment(models.Model):

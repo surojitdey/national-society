@@ -1,8 +1,11 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from society.models import Society
+
 
 class SettingDetails(models.Model):
+  society = models.ForeignKey(Society, on_delete=models.CASCADE, null=True)
   community_name = models.CharField(
       _('community name'), max_length=100, blank=True)
   appartment_name = models.CharField(

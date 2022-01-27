@@ -7,6 +7,7 @@ class EventSerializer(serializers.ModelSerializer):
     model = Events
     fields = (
         'id',
+        'society',
         'media_file',
         'thumbnail',
         'added',
@@ -26,6 +27,7 @@ class NewsSerializer(serializers.ModelSerializer):
     model = News
     fields = (
         'id',
+        'society',
         'media_file',
         'added',
         'title',

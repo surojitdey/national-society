@@ -36,6 +36,9 @@ class SettingViewset(viewsets.ModelViewSet):
       self.permission_classes = [AllowAny]
 
     return super(SettingViewset, self).get_permissions()
+  
+  def get_queryset(self):
+    return SettingDetails.objects.filter(society=self.request.user.society)
 
   def create(self, request, *args, **kwargs):
     serializer = self.get_serializer(data=request.data)

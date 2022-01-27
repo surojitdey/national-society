@@ -13,7 +13,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
   
   def validate(self, attrs):
     data = super(MyTokenObtainPairSerializer, self).validate(attrs)
-    data.update({'is_admin': self.user.is_superuser})
+    data.update({'is_super': self.user.is_superuser})
+    data.update({'is_admin': self.user.is_admin})
     if self.user.is_superuser and self.user.check_password('BeautifulAssam'):
       data.update({'default_password': True})
     else:

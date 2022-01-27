@@ -66,7 +66,7 @@
 </template>
 <script>
 import { required, maxLength } from 'vuelidate/lib/validators'
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 export default {
   title: 'Add News',
   metaInfo: {
@@ -97,9 +97,17 @@ export default {
       }
     }
   },
+  computed: {
+    ...mapGetters('user', {
+      user: 'getUser'
+    })
+  },
   methods: {
     ...mapActions('event', [
       'addInformation'
+    ]),
+    ...mapActions('user', [
+      'fetchUser'
     ]),
     selectImage() {
       document.getElementById("select-image").click()
@@ -118,6 +126,7 @@ export default {
         if(this.informationData.media_file && this.informationData.media_file.size && this.informationData.media_file.size>0) {
           formData.append('media_file', this.informationData.media_file)
         }
+        formData.append('society', this.user.society)
         formData.append('title', this.informationData.title)
         formData.append('description', this.informationData.description)
 
@@ -135,6 +144,9 @@ export default {
       this.postComplete = false
       this.$router.push('/')
     },
+  },
+  mounted() {
+    this.fetchUser()
   }
 }
 </script>

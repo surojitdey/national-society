@@ -7,7 +7,8 @@ class FeesItemSerializer(serializers.ModelSerializer):
     model = FeesItem
     fields = (
       'id',
-      'fields'
+      'fields',
+      'society'
     )
 
 class PaymentSerializer(serializers.ModelSerializer):

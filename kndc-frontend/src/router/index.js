@@ -32,6 +32,7 @@ import SecuritySettings from '@/views/SecuritySettings.vue'
 import AddSecurity from '@/views/AddSecurity.vue'
 import FeesSettings from '@/views/FeesSettings.vue'
 import ResidentsFees from '@/views/ResidentsFees.vue'
+import HomeNational from '@/views/HomeNational'
 
 Vue.use(VueRouter)
 
@@ -39,7 +40,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home,
+    component: store.getters['JWT/loggedIn']? Home: HomeNational,
     meta: {
       title: 'Kamakhyanagar Development Committee'
     }
