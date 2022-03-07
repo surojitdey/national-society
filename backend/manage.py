@@ -4,7 +4,7 @@ import os
 import sys
 from dotenv import load_dotenv
 
-print("hello world")
+print("hello world again")
 
 def main():
     project_folder = os.path.dirname(os.path.abspath(__file__))
